@@ -21,16 +21,25 @@
                     <option value="H2O">H&#8322;O (Water Vapor)</option>
                     <option value="CH4">CH&#8324; (Methane)</option>
                     <option value="O3">O&#8323; (Ozone)</option>
+                    <option value="NO">NO (Nitric Oxide)</option>
                 </select>
             </div>
 
             <div class="control-group">
-                <label for="numin">Min Wavenumber (cm⁻¹)</label>
+                <label for="spectral-unit">Unit</label>
+                <select id="spectral-unit">
+                    <option value="wavenumber">Wavenumber (cm⁻¹)</option>
+                    <option value="wavelength">Wavelength (μm)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="numin" id="numin-label">Min Wavenumber (cm⁻¹)</label>
                 <input type="number" id="numin" value="2300" step="10">
             </div>
 
             <div class="control-group">
-                <label for="numax">Max Wavenumber (cm⁻¹)</label>
+                <label for="numax" id="numax-label">Max Wavenumber (cm⁻¹)</label>
                 <input type="number" id="numax" value="2400" step="10">
             </div>
 
@@ -80,7 +89,7 @@
             <table id="line-table">
                 <thead>
                     <tr>
-                        <th>ν (cm⁻¹)</th>
+                        <th id="th-spectral">ν (cm⁻¹)</th>
                         <th>S (cm/molecule)</th>
                         <th>γ<sub>air</sub> (cm⁻¹/atm)</th>
                         <th>E″ (cm⁻¹)</th>
