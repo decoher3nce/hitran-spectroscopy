@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HITRAN Spectral Explorer</title>
+    <link rel="stylesheet" href="hitran.css">
+</head>
+<body>
+    <header>
+        <h1>HITRAN Spectral Explorer</h1>
+        <p class="subtitle">Molecular Absorption Line Database</p>
+    </header>
+
+    <main>
+        <div class="controls">
+            <div class="control-group">
+                <label for="molecule-select">Molecule</label>
+                <select id="molecule-select">
+                    <option value="CO2">CO&#8322; (Carbon Dioxide)</option>
+                    <option value="H2O">H&#8322;O (Water Vapor)</option>
+                    <option value="CH4">CH&#8324; (Methane)</option>
+                    <option value="O3">O&#8323; (Ozone)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="numin">Min Wavenumber (cm⁻¹)</label>
+                <input type="number" id="numin" value="2300" step="10">
+            </div>
+
+            <div class="control-group">
+                <label for="numax">Max Wavenumber (cm⁻¹)</label>
+                <input type="number" id="numax" value="2400" step="10">
+            </div>
+
+            <div class="control-group">
+                <label for="plot-type">Plot Type</label>
+                <select id="plot-type">
+                    <option value="stick">Stick Spectrum</option>
+                    <option value="cross-section">Cross Section</option>
+                </select>
+            </div>
+
+            <div class="control-group future-controls">
+                <label for="temperature">Temperature (K)</label>
+                <input type="number" id="temperature" value="296" step="10" min="150" max="3000">
+            </div>
+
+            <div class="control-group future-controls">
+                <label for="pressure">Pressure (atm)</label>
+                <input type="number" id="pressure" value="1.0" step="0.1" min="0.001" max="100">
+            </div>
+
+            <button id="plot-btn">Plot</button>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="spectrum-canvas"></canvas>
+            <div id="tooltip" class="tooltip"></div>
+        </div>
+
+        <div class="info-panel">
+            <div class="stat" id="stat-lines">
+                <span class="stat-label">Lines in range</span>
+                <span class="stat-value">—</span>
+            </div>
+            <div class="stat" id="stat-strongest">
+                <span class="stat-label">Strongest line</span>
+                <span class="stat-value">—</span>
+            </div>
+            <div class="stat" id="stat-range">
+                <span class="stat-label">Range</span>
+                <span class="stat-value">—</span>
+            </div>
+        </div>
+
+        <div class="line-table-container">
+            <h2>Line Data</h2>
+            <table id="line-table">
+                <thead>
+                    <tr>
+                        <th>ν (cm⁻¹)</th>
+                        <th>S (cm/molecule)</th>
+                        <th>γ<sub>air</sub> (cm⁻¹/atm)</th>
+                        <th>E″ (cm⁻¹)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="hitran.js"></script>
+</body>
+</html>
