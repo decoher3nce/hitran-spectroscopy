@@ -18,26 +18,34 @@
             <div class="control-group">
                 <label for="spectral-unit">Unit</label>
                 <select id="spectral-unit">
-                    <option value="wavenumber">Wavenumber (cm⁻¹)</option>
                     <option value="wavelength">Wavelength (μm)</option>
+                    <option value="wavenumber">Wavenumber (cm⁻¹)</option>
                 </select>
             </div>
 
             <div class="control-group">
-                <label for="numin" id="numin-label">Min Wavenumber (cm⁻¹)</label>
-                <input type="number" id="numin" value="1800" step="10">
+                <label for="numin" id="numin-label">Min Wavelength (μm)</label>
+                <input type="number" id="numin" value="4.17" step="0.1">
             </div>
 
             <div class="control-group">
-                <label for="numax" id="numax-label">Max Wavenumber (cm⁻¹)</label>
-                <input type="number" id="numax" value="2400" step="10">
+                <label for="numax" id="numax-label">Max Wavelength (μm)</label>
+                <input type="number" id="numax" value="5.56" step="0.1">
             </div>
 
             <div class="control-group">
                 <label for="plot-type">Plot Type</label>
                 <select id="plot-type">
-                    <option value="stick">Stick Spectrum</option>
                     <option value="cross-section">Cross Section</option>
+                    <option value="stick">Stick Spectrum</option>
+                </select>
+            </div>
+
+            <div class="control-group" id="scale-group" style="display:none">
+                <label for="y-scale">Y Scale</label>
+                <select id="y-scale">
+                    <option value="log">Logarithmic</option>
+                    <option value="linear">Linear</option>
                 </select>
             </div>
 
@@ -68,6 +76,11 @@
                 <button id="add-layer-btn">+ Add Layer</button>
             </div>
             <div id="layers-container"></div>
+        </div>
+
+        <div class="export-bar">
+            <button id="save-png-btn" class="export-btn">Save PNG</button>
+            <button id="save-xlsx-btn" class="export-btn">Save XLSX</button>
         </div>
 
         <div class="chart-container">
