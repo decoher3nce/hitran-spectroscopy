@@ -41,7 +41,7 @@
                 </select>
             </div>
 
-            <div class="control-group" id="scale-group" style="display:none">
+            <div class="control-group">
                 <label for="y-scale">Y Scale</label>
                 <select id="y-scale">
                     <option value="log">Logarithmic</option>
@@ -49,23 +49,29 @@
                 </select>
             </div>
 
-            <div class="control-group">
-                <label for="database-select">Database</label>
-                <select id="database-select">
-                    <option value="hitran">HITRAN (296 K)</option>
-                    <option value="hitemp">HITEMP (High-T)</option>
-                </select>
-            </div>
-
             <button id="plot-btn">Plot</button>
         </div>
 
-        <!-- Presets -->
+        <!-- Y-axis scale controls -->
+        <div class="scale-controls">
+            <label class="scale-lock">
+                <input type="checkbox" id="lock-y-scale">
+                Lock Y scale
+            </label>
+            <label class="scale-param">Min <input type="text" id="y-min" placeholder="auto" class="scale-input"></label>
+            <label class="scale-param">Max <input type="text" id="y-max" placeholder="auto" class="scale-input"></label>
+            <button id="reset-scale-btn" class="scale-reset-btn">Auto</button>
+        </div>
+
+        <!-- Presets (additive toggle) -->
         <div class="presets">
             <span class="presets-label">Presets:</span>
             <button class="preset-btn" data-preset="combustion">Combustion Effluent (NO + CO₂ + H₂O)</button>
             <button class="preset-btn" data-preset="ambient">Ambient Atmosphere (CO₂ + H₂O)</button>
             <button class="preset-btn" data-preset="no-comparison">NO: Ambient vs Hot</button>
+            <button class="preset-btn" data-preset="greenhouse">Greenhouse Gases (CO₂ + CH₄ + H₂O)</button>
+            <button class="preset-btn" data-preset="ozone-window">Atmospheric Window + O₃</button>
+            <button class="preset-btn" data-preset="methane-leak">CH₄ Leak Detection</button>
             <button class="preset-btn" data-preset="clear">Clear All</button>
         </div>
 

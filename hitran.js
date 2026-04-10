@@ -13,15 +13,16 @@ class HitranExplorer {
         this.numaxInput = document.getElementById('numax');
         this.plotTypeSelect = document.getElementById('plot-type');
         this.unitSelect = document.getElementById('spectral-unit');
-        this.dbSelect = document.getElementById('database-select');
         this.yScaleSelect = document.getElementById('y-scale');
-        this.scaleGroup = document.getElementById('scale-group');
+        this.lockYScale = document.getElementById('lock-y-scale');
+        this.yMinInput = document.getElementById('y-min');
+        this.yMaxInput = document.getElementById('y-max');
+        this.activePresets = new Set();
 
         this.setupEvents();
         this.resizeCanvas();
         this.updateLabels();
         this.addLayer({ molecule: 'CO2', T: 296, P: 1.0 });
-        this.updateScaleVisibility();
         this.plot();
     }
 
@@ -66,8 +67,13 @@ class HitranExplorer {
         return this.isWavelength() ? 'μm' : 'cm⁻¹';
     }
 
-    updateScaleVisibility() {
-        this.scaleGroup.style.display = this.plotTypeSelect.value === 'stick' ? '' : 'none';
+    getYRange(autoMin, autoMax) {
+        if (this.lockYScale.checked) {
+            const userMin = this.yMinInput.value !== '' ? parseFloat(this.yMinInput.value) : autoMin;
+            const userMax = this.yMaxInput.value !== '' ? parseFloat(this.yMaxInput.value) : autoMax;
+            return [userMin, userMax];
+        }
+        return [autoMin, autoMax];
     }
 
     // --- Layer management ---
@@ -91,7 +97,16 @@ class HitranExplorer {
     }
 
     removeLayer(id) {
+        const removed = this.layers.find(l => l.id === id);
         this.layers = this.layers.filter(l => l.id !== id);
+        // If a preset's layers are all gone, deactivate it
+        if (removed && removed.presetTag) {
+            const tag = removed.presetTag;
+            if (!this.layers.some(l => l.presetTag === tag)) {
+                this.activePresets.delete(tag);
+                this.updatePresetButtons();
+            }
+        }
         this.renderLayers();
         this.plot();
     }
@@ -175,38 +190,105 @@ class HitranExplorer {
         return LAYER_COLORS[layer.colorIdx];
     }
 
-    // --- Presets ---
+    // --- Presets (additive toggle) ---
 
-    applyPreset(name) {
-        this.layers = [];
-        this.layerIdCounter = 0;
+    getPresetDef(name) {
+        const presets = {
+            combustion: {
+                layers: [
+                    { molecule: 'NO', T: 1500, P: 1.0, db: 'hitemp' },
+                    { molecule: 'CO2', T: 1500, P: 1.0, db: 'hitemp' },
+                    { molecule: 'H2O', T: 1500, P: 1.0, db: 'hitemp' },
+                ],
+                range: [1800, 2400],
+            },
+            ambient: {
+                layers: [
+                    { molecule: 'CO2', T: 296, P: 1.0 },
+                    { molecule: 'H2O', T: 296, P: 1.0 },
+                ],
+                range: [1500, 2400],
+            },
+            'no-comparison': {
+                layers: [
+                    { molecule: 'NO', T: 296, P: 1.0 },
+                    { molecule: 'NO', T: 1500, P: 1.0, db: 'hitemp' },
+                ],
+                range: [1750, 1960],
+            },
+            greenhouse: {
+                layers: [
+                    { molecule: 'CO2', T: 296, P: 1.0 },
+                    { molecule: 'CH4', T: 296, P: 1.0 },
+                    { molecule: 'H2O', T: 296, P: 1.0 },
+                ],
+                range: [1300, 3200],
+            },
+            'ozone-window': {
+                layers: [
+                    { molecule: 'O3', T: 220, P: 0.01 },
+                    { molecule: 'CO2', T: 296, P: 1.0 },
+                ],
+                range: [950, 1100],
+            },
+            'methane-leak': {
+                layers: [
+                    { molecule: 'CH4', T: 296, P: 1.0 },
+                    { molecule: 'H2O', T: 296, P: 1.0 },
+                ],
+                range: [2900, 3100],
+            },
+        };
+        return presets[name];
+    }
 
-        switch (name) {
-            case 'combustion':
-                this.addLayer({ molecule: 'NO', T: 1500, P: 1.0, db: 'hitemp' });
-                this.addLayer({ molecule: 'CO2', T: 1500, P: 1.0 });
-                this.addLayer({ molecule: 'H2O', T: 1500, P: 1.0 });
-                this.setRange(1800, 2400);
-                break;
-
-            case 'ambient':
-                this.addLayer({ molecule: 'CO2', T: 296, P: 1.0 });
-                this.addLayer({ molecule: 'H2O', T: 296, P: 1.0 });
-                this.setRange(1500, 2400);
-                break;
-
-            case 'no-comparison':
-                this.addLayer({ molecule: 'NO', T: 296, P: 1.0 });
-                this.addLayer({ molecule: 'NO', T: 1500, P: 1.0, db: 'hitemp' });
-                this.setRange(1750, 1960);
-                break;
-
-            case 'clear':
-                break;
+    togglePreset(name) {
+        if (name === 'clear') {
+            this.layers = [];
+            this.layerIdCounter = 0;
+            this.activePresets.clear();
+            this.updatePresetButtons();
+            this.renderLayers();
+            this.plot();
+            return;
         }
 
+        const def = this.getPresetDef(name);
+        if (!def) return;
+
+        if (this.activePresets.has(name)) {
+            // Remove layers that belong to this preset
+            this.layers = this.layers.filter(l => l.presetTag !== name);
+            this.activePresets.delete(name);
+        } else {
+            // Add layers
+            for (const opts of def.layers) {
+                const layer = this.addLayer(opts);
+                layer.presetTag = name;
+            }
+            this.activePresets.add(name);
+            this.expandRange(def.range[0], def.range[1]);
+        }
+
+        this.updatePresetButtons();
         this.renderLayers();
         this.plot();
+    }
+
+    expandRange(numin, numax) {
+        // Expand current range to include the preset's range
+        const [curMin, curMax] = this.getNuRange();
+        const newMin = Math.min(curMin, numin);
+        const newMax = Math.max(curMax, numax);
+        this.setRange(newMin, newMax);
+    }
+
+    updatePresetButtons() {
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            const preset = btn.dataset.preset;
+            if (preset === 'clear') return;
+            btn.classList.toggle('preset-active', this.activePresets.has(preset));
+        });
     }
 
     setRange(numin, numax) {
@@ -230,16 +312,20 @@ class HitranExplorer {
 
         document.querySelectorAll('.preset-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                this.applyPreset(btn.dataset.preset);
+                this.togglePreset(btn.dataset.preset);
             });
         });
 
-        this.plotTypeSelect.addEventListener('change', () => {
-            this.updateScaleVisibility();
+        this.plotTypeSelect.addEventListener('change', () => this.plot());
+        this.yScaleSelect.addEventListener('change', () => this.plot());
+
+        // Scale lock
+        document.getElementById('reset-scale-btn').addEventListener('click', () => {
+            this.lockYScale.checked = false;
+            this.yMinInput.value = '';
+            this.yMaxInput.value = '';
             this.plot();
         });
-
-        this.yScaleSelect.addEventListener('change', () => this.plot());
 
         this.unitSelect.addEventListener('change', () => {
             const minVal = parseFloat(this.numinInput.value);
@@ -353,21 +439,23 @@ class HitranExplorer {
             return;
         }
 
+        const logScale = this.yScaleSelect.value === 'log';
+
         if (plotType === 'stick') {
-            const logScale = this.yScaleSelect.value === 'log';
             let allS = [];
             for (const layer of activeLayers) {
                 allS.push(...layer.lines.map(l => l.S_T).filter(s => s > 0));
             }
 
-            let yMin, yMax;
+            let autoMin, autoMax;
             if (logScale) {
-                yMax = Math.log10(Math.max(...allS));
-                yMin = Math.log10(Math.min(...allS)) - 0.5;
+                autoMax = Math.log10(Math.max(...allS));
+                autoMin = Math.log10(Math.min(...allS)) - 0.5;
             } else {
-                yMax = Math.max(...allS);
-                yMin = 0;
+                autoMax = Math.max(...allS);
+                autoMin = 0;
             }
+            const [yMin, yMax] = this.getYRange(autoMin, autoMax);
 
             for (const layer of activeLayers) {
                 this.drawStick(ctx, m, pw, ph, numin, numax, layer, yMin, yMax, logScale);
@@ -376,7 +464,7 @@ class HitranExplorer {
             const nPoints = Math.min(pw * 2, 2000);
             const dnu = (numax - numin) / nPoints;
             const sigmas = [];
-            let globalMax = 0;
+            let autoMax = 0;
 
             for (const layer of activeLayers) {
                 const sigma = new Float64Array(nPoints);
@@ -392,13 +480,15 @@ class HitranExplorer {
                 for (let i = 0; i < nPoints; i++) {
                     if (sigma[i] > layerMax) layerMax = sigma[i];
                 }
-                if (layerMax > globalMax) globalMax = layerMax;
+                if (layerMax > autoMax) autoMax = layerMax;
                 sigmas.push(sigma);
             }
 
-            if (globalMax > 0) {
+            const [, yMax] = this.getYRange(0, autoMax);
+
+            if (yMax > 0) {
                 for (let li = 0; li < activeLayers.length; li++) {
-                    this.drawCrossSection(ctx, m, pw, ph, nPoints, sigmas[li], globalMax, activeLayers[li]);
+                    this.drawCrossSection(ctx, m, pw, ph, nPoints, sigmas[li], yMax, activeLayers[li]);
                 }
             }
         }

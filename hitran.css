@@ -138,6 +138,78 @@ select:focus, input:focus {
     background: var(--accent-dim);
 }
 
+.preset-btn.preset-active {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+/* Scale controls */
+.scale-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    font-size: 0.78rem;
+}
+
+.scale-lock {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.scale-lock input {
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.scale-param {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--text-secondary);
+}
+
+.scale-input {
+    width: 80px;
+    min-width: 80px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.3rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.scale-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.scale-reset-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.scale-reset-btn:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
 /* Layers */
 .layers-panel {
     background: var(--bg-secondary);
