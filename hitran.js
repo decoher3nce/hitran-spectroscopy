@@ -14,10 +14,14 @@ class HitranExplorer {
         this.plotTypeSelect = document.getElementById('plot-type');
         this.unitSelect = document.getElementById('spectral-unit');
         this.dbSelect = document.getElementById('database-select');
+        this.yScaleSelect = document.getElementById('y-scale');
+        this.scaleGroup = document.getElementById('scale-group');
 
         this.setupEvents();
         this.resizeCanvas();
+        this.updateLabels();
         this.addLayer({ molecule: 'CO2', T: 296, P: 1.0 });
+        this.updateScaleVisibility();
         this.plot();
     }
 
@@ -60,6 +64,10 @@ class HitranExplorer {
 
     spectralUnit() {
         return this.isWavelength() ? 'μm' : 'cm⁻¹';
+    }
+
+    updateScaleVisibility() {
+        this.scaleGroup.style.display = this.plotTypeSelect.value === 'stick' ? '' : 'none';
     }
 
     // --- Layer management ---
@@ -111,16 +119,15 @@ class HitranExplorer {
                 </select>
                 <label class="layer-param">T<input type="number" value="${layer.T}" min="150" max="5000" step="50" data-layer-id="${layer.id}" data-field="T">K</label>
                 <label class="layer-param">P<input type="number" value="${layer.P}" min="0.001" max="100" step="0.1" data-layer-id="${layer.id}" data-field="P">atm</label>
-                <span class="layer-color-dot" style="background:${color.line}"></span>
-                <button class="layer-remove" data-layer-id="${layer.id}">×</button>
+                <input type="color" class="layer-color-picker" value="${color.line}" data-layer-id="${layer.id}" title="Change color">
+                <button class="layer-remove" data-layer-id="${layer.id}">&times;</button>
             `;
             container.appendChild(div);
         }
 
         // Wire events
         container.querySelectorAll('[data-field]').forEach(el => {
-            const event = el.type === 'checkbox' ? 'change' : 'change';
-            el.addEventListener(event, (e) => {
+            el.addEventListener('change', (e) => {
                 const id = parseInt(e.target.dataset.layerId);
                 const field = e.target.dataset.field;
                 const layer = this.layers.find(l => l.id === id);
@@ -136,11 +143,36 @@ class HitranExplorer {
             });
         });
 
+        container.querySelectorAll('.layer-color-picker').forEach(el => {
+            el.addEventListener('input', (e) => {
+                const id = parseInt(e.target.dataset.layerId);
+                const layer = this.layers.find(l => l.id === id);
+                if (!layer) return;
+                const hex = e.target.value;
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                // Store custom color
+                layer.customColor = {
+                    line: hex,
+                    fill: `rgba(${r}, ${g}, ${b}, 0.25)`,
+                };
+                // Update border
+                e.target.closest('.layer-row').style.borderLeftColor = hex;
+                this.plot();
+            });
+        });
+
         container.querySelectorAll('.layer-remove').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.removeLayer(parseInt(e.target.dataset.layerId));
             });
         });
+    }
+
+    getLayerColor(layer) {
+        if (layer.customColor) return layer.customColor;
+        return LAYER_COLORS[layer.colorIdx];
     }
 
     // --- Presets ---
@@ -154,34 +186,19 @@ class HitranExplorer {
                 this.addLayer({ molecule: 'NO', T: 1500, P: 1.0, db: 'hitemp' });
                 this.addLayer({ molecule: 'CO2', T: 1500, P: 1.0 });
                 this.addLayer({ molecule: 'H2O', T: 1500, P: 1.0 });
-                this.numinInput.value = 1800;
-                this.numaxInput.value = 2400;
-                if (this.isWavelength()) {
-                    this.numinInput.value = (10000 / 2400).toFixed(2);
-                    this.numaxInput.value = (10000 / 1800).toFixed(2);
-                }
+                this.setRange(1800, 2400);
                 break;
 
             case 'ambient':
                 this.addLayer({ molecule: 'CO2', T: 296, P: 1.0 });
                 this.addLayer({ molecule: 'H2O', T: 296, P: 1.0 });
-                this.numinInput.value = 1500;
-                this.numaxInput.value = 2400;
-                if (this.isWavelength()) {
-                    this.numinInput.value = (10000 / 2400).toFixed(2);
-                    this.numaxInput.value = (10000 / 1500).toFixed(2);
-                }
+                this.setRange(1500, 2400);
                 break;
 
             case 'no-comparison':
                 this.addLayer({ molecule: 'NO', T: 296, P: 1.0 });
                 this.addLayer({ molecule: 'NO', T: 1500, P: 1.0, db: 'hitemp' });
-                this.numinInput.value = 1750;
-                this.numaxInput.value = 1960;
-                if (this.isWavelength()) {
-                    this.numinInput.value = (10000 / 1960).toFixed(2);
-                    this.numaxInput.value = (10000 / 1750).toFixed(2);
-                }
+                this.setRange(1750, 1960);
                 break;
 
             case 'clear':
@@ -190,6 +207,16 @@ class HitranExplorer {
 
         this.renderLayers();
         this.plot();
+    }
+
+    setRange(numin, numax) {
+        if (this.isWavelength()) {
+            this.numinInput.value = (10000 / numax).toFixed(2);
+            this.numaxInput.value = (10000 / numin).toFixed(2);
+        } else {
+            this.numinInput.value = numin;
+            this.numaxInput.value = numax;
+        }
     }
 
     // --- Events ---
@@ -207,6 +234,13 @@ class HitranExplorer {
             });
         });
 
+        this.plotTypeSelect.addEventListener('change', () => {
+            this.updateScaleVisibility();
+            this.plot();
+        });
+
+        this.yScaleSelect.addEventListener('change', () => this.plot());
+
         this.unitSelect.addEventListener('change', () => {
             const minVal = parseFloat(this.numinInput.value);
             const maxVal = parseFloat(this.numaxInput.value);
@@ -220,6 +254,10 @@ class HitranExplorer {
             this.updateLabels();
             this.plot();
         });
+
+        // Export
+        document.getElementById('save-png-btn').addEventListener('click', () => this.savePNG());
+        document.getElementById('save-xlsx-btn').addEventListener('click', () => this.saveXLSX());
 
         window.addEventListener('resize', () => {
             this.resizeCanvas();
@@ -316,19 +354,25 @@ class HitranExplorer {
         }
 
         if (plotType === 'stick') {
-            // Compute global log scale across all layers
+            const logScale = this.yScaleSelect.value === 'log';
             let allS = [];
             for (const layer of activeLayers) {
                 allS.push(...layer.lines.map(l => l.S_T).filter(s => s > 0));
             }
-            const logMax = Math.log10(Math.max(...allS));
-            const logMin = Math.log10(Math.min(...allS)) - 0.5;
+
+            let yMin, yMax;
+            if (logScale) {
+                yMax = Math.log10(Math.max(...allS));
+                yMin = Math.log10(Math.min(...allS)) - 0.5;
+            } else {
+                yMax = Math.max(...allS);
+                yMin = 0;
+            }
 
             for (const layer of activeLayers) {
-                this.drawStick(ctx, m, pw, ph, numin, numax, layer, logMin, logMax);
+                this.drawStick(ctx, m, pw, ph, numin, numax, layer, yMin, yMax, logScale);
             }
         } else {
-            // Cross section: compute all, find global max, then draw
             const nPoints = Math.min(pw * 2, 2000);
             const dnu = (numax - numin) / nPoints;
             const sigmas = [];
@@ -362,14 +406,19 @@ class HitranExplorer {
         this.drawAxes(ctx, m, pw, ph, numin, numax, plotType);
     }
 
-    drawStick(ctx, m, pw, ph, numin, numax, layer, logMin, logMax) {
-        const color = LAYER_COLORS[layer.colorIdx];
+    drawStick(ctx, m, pw, ph, numin, numax, layer, yMin, yMax, logScale) {
+        const color = this.getLayerColor(layer);
 
         for (const line of layer.lines) {
             if (line.S_T <= 0) continue;
             const x = this.nuToX(line.nu, m, pw, numin, numax);
-            const logS = Math.log10(line.S_T);
-            const yFrac = Math.max(0, (logS - logMin) / (logMax - logMin));
+            let yFrac;
+            if (logScale) {
+                const logS = Math.log10(line.S_T);
+                yFrac = Math.max(0, (logS - yMin) / (yMax - yMin));
+            } else {
+                yFrac = Math.max(0, (line.S_T - yMin) / (yMax - yMin));
+            }
             const y = m.top + ph - yFrac * ph;
 
             ctx.strokeStyle = color.line;
@@ -390,13 +439,16 @@ class HitranExplorer {
     }
 
     drawCrossSection(ctx, m, pw, ph, nPoints, sigma, globalMax, layer) {
-        const color = LAYER_COLORS[layer.colorIdx];
+        const color = this.getLayerColor(layer);
         const wl = this.isWavelength();
 
         // Filled area
+        const r = parseInt(color.line.length === 7 ? color.line.slice(1, 3) : 'ff', 16);
+        const g = parseInt(color.line.length === 7 ? color.line.slice(3, 5) : 'ff', 16);
+        const b = parseInt(color.line.length === 7 ? color.line.slice(5, 7) : 'ff', 16);
         const gradient = ctx.createLinearGradient(0, m.top, 0, m.top + ph);
-        gradient.addColorStop(0, color.fill);
-        gradient.addColorStop(1, color.fill.replace(/[\d.]+\)$/, '0.02)'));
+        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.3)`);
+        gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.02)`);
 
         ctx.fillStyle = gradient;
         ctx.beginPath();
@@ -473,7 +525,13 @@ class HitranExplorer {
         ctx.translate(15, m.top + ph / 2);
         ctx.rotate(-Math.PI / 2);
         ctx.textAlign = 'center';
-        ctx.fillText(plotType === 'stick' ? 'log₁₀ Intensity' : 'Cross Section (arb.)', 0, 0);
+        let yLabel;
+        if (plotType === 'stick') {
+            yLabel = this.yScaleSelect.value === 'log' ? 'log₁₀ Intensity' : 'Intensity (cm/molecule)';
+        } else {
+            yLabel = 'Cross Section (arb.)';
+        }
+        ctx.fillText(yLabel, 0, 0);
         ctx.restore();
     }
 
@@ -493,7 +551,6 @@ class HitranExplorer {
             ? numax - frac * (numax - numin)
             : numin + frac * (numax - numin);
 
-        // Find closest line across all active layers
         let closest = null;
         let closestLayer = null;
         let minDist = Infinity;
@@ -512,7 +569,7 @@ class HitranExplorer {
         const pixelDist = (minDist / (numax - numin)) * pw;
         if (closest && closestLayer && pixelDist < 20) {
             const wl = this.isWavelength();
-            const color = LAYER_COLORS[closestLayer.colorIdx];
+            const color = this.getLayerColor(closestLayer);
             const db = closestLayer.db === 'hitemp' ? HITEMP_DATA : HITRAN_DATA;
             const molName = db[closestLayer.molecule]?.name || closestLayer.molecule;
             const spectralLine = wl
@@ -547,7 +604,7 @@ class HitranExplorer {
         }
         legend.style.display = 'flex';
         legend.innerHTML = active.map(layer => {
-            const color = LAYER_COLORS[layer.colorIdx];
+            const color = this.getLayerColor(layer);
             const db = layer.db === 'hitemp' ? HITEMP_DATA : HITRAN_DATA;
             const molName = db[layer.molecule]?.name || layer.molecule;
             const dbLabel = layer.db === 'hitemp' ? ' [HT]' : '';
@@ -586,7 +643,7 @@ class HitranExplorer {
         const allLines = [];
         for (const layer of this.layers) {
             if (!layer.enabled) continue;
-            const color = LAYER_COLORS[layer.colorIdx];
+            const color = this.getLayerColor(layer);
             const db = layer.db === 'hitemp' ? HITEMP_DATA : HITRAN_DATA;
             const molName = db[layer.molecule]?.name || layer.molecule;
             for (const line of layer.lines) {
@@ -606,6 +663,239 @@ class HitranExplorer {
                 `<td>${line.E_lower.toFixed(1)}</td>`;
             tbody.appendChild(tr);
         }
+    }
+
+    // --- Export PNG ---
+
+    savePNG() {
+        // Render at high resolution
+        const dpr = window.devicePixelRatio || 1;
+        const exportCanvas = document.createElement('canvas');
+        const w = this.displayWidth * 2;
+        const h = this.displayHeight * 2;
+        exportCanvas.width = w;
+        exportCanvas.height = h;
+        const ctx = exportCanvas.getContext('2d');
+        ctx.scale(2, 2);
+
+        // Re-draw onto export canvas
+        const origCtx = this.ctx;
+        this.ctx = ctx;
+        this.draw();
+        this.ctx = origCtx;
+
+        // Add legend text at top
+        const active = this.layers.filter(l => l.enabled);
+        if (active.length > 0) {
+            ctx.font = '11px sans-serif';
+            let lx = 80;
+            for (const layer of active) {
+                const color = this.getLayerColor(layer);
+                const db = layer.db === 'hitemp' ? HITEMP_DATA : HITRAN_DATA;
+                const molName = db[layer.molecule]?.name || layer.molecule;
+                const dbLabel = layer.db === 'hitemp' ? ' [HT]' : '';
+                const label = `${molName}${dbLabel} ${layer.T}K`;
+                ctx.fillStyle = color.line;
+                ctx.fillRect(lx, 6, 10, 10);
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillText(label, lx + 14, 15);
+                lx += ctx.measureText(label).width + 30;
+            }
+        }
+
+        const link = document.createElement('a');
+        link.download = 'hitran-spectrum.png';
+        link.href = exportCanvas.toDataURL('image/png');
+        link.click();
+    }
+
+    // --- Export XLSX ---
+
+    saveXLSX() {
+        const wl = this.isWavelength();
+        const rows = [];
+        const spectralHeader = wl ? 'Wavelength (um)' : 'Wavenumber (cm-1)';
+
+        // Header
+        rows.push(['Layer', 'Molecule', 'Database', 'T (K)', 'P (atm)',
+            spectralHeader, 'Wavenumber (cm-1)', 'S_T (cm/molecule)', 'gamma_T (cm-1)', 'E_lower (cm-1)']);
+
+        for (const layer of this.layers) {
+            if (!layer.enabled) continue;
+            const db = layer.db === 'hitemp' ? HITEMP_DATA : HITRAN_DATA;
+            const molName = db[layer.molecule]?.name || layer.molecule;
+            for (const line of layer.lines) {
+                const spectralVal = wl ? 10000 / line.nu : line.nu;
+                rows.push([
+                    `${molName} ${layer.T}K`,
+                    layer.molecule,
+                    layer.db.toUpperCase(),
+                    layer.T,
+                    layer.P,
+                    spectralVal,
+                    line.nu,
+                    line.S_T,
+                    line.gamma_T,
+                    line.E_lower,
+                ]);
+            }
+        }
+
+        // Build XLSX manually (minimal Open XML spreadsheet)
+        const xlsx = this.buildXLSX(rows);
+        const blob = new Blob([xlsx], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const link = document.createElement('a');
+        link.download = 'hitran-spectrum.xlsx';
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+
+    buildXLSX(rows) {
+        // Minimal XLSX using JSZip-like manual construction
+        // XLSX is a ZIP of XML files. We'll build it with the ZIP format manually.
+
+        const sheetData = rows.map((row, ri) => {
+            const cells = row.map((val, ci) => {
+                const col = String.fromCharCode(65 + ci);
+                const ref = `${col}${ri + 1}`;
+                if (typeof val === 'number') {
+                    return `<c r="${ref}"><v>${val}</v></c>`;
+                } else {
+                    const escaped = String(val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    return `<c r="${ref}" t="inlineStr"><is><t>${escaped}</t></is></c>`;
+                }
+            }).join('');
+            return `<row r="${ri + 1}">${cells}</row>`;
+        }).join('');
+
+        const sheet = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<sheetData>${sheetData}</sheetData></worksheet>`;
+
+        const workbook = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheets><sheet name="Spectrum" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+
+        const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+</Types>`;
+
+        const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+
+        const wbRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+</Relationships>`;
+
+        // Build ZIP
+        const files = [
+            { path: '[Content_Types].xml', data: contentTypes },
+            { path: '_rels/.rels', data: rels },
+            { path: 'xl/workbook.xml', data: workbook },
+            { path: 'xl/_rels/workbook.xml.rels', data: wbRels },
+            { path: 'xl/worksheets/sheet1.xml', data: sheet },
+        ];
+
+        return this.createZip(files);
+    }
+
+    createZip(files) {
+        const enc = new TextEncoder();
+        const parts = [];
+        const centralDir = [];
+        let offset = 0;
+
+        for (const file of files) {
+            const data = enc.encode(file.data);
+            const name = enc.encode(file.path);
+            const crc = this.crc32(data);
+
+            // Local file header
+            const local = new Uint8Array(30 + name.length + data.length);
+            const lv = new DataView(local.buffer);
+            lv.setUint32(0, 0x04034b50, true); // signature
+            lv.setUint16(4, 20, true); // version needed
+            lv.setUint16(6, 0, true); // flags
+            lv.setUint16(8, 0, true); // compression (store)
+            lv.setUint16(10, 0, true); // mod time
+            lv.setUint16(12, 0, true); // mod date
+            lv.setUint32(14, crc, true);
+            lv.setUint32(18, data.length, true); // compressed
+            lv.setUint32(22, data.length, true); // uncompressed
+            lv.setUint16(26, name.length, true);
+            lv.setUint16(28, 0, true); // extra length
+            local.set(name, 30);
+            local.set(data, 30 + name.length);
+            parts.push(local);
+
+            // Central directory entry
+            const cd = new Uint8Array(46 + name.length);
+            const cv = new DataView(cd.buffer);
+            cv.setUint32(0, 0x02014b50, true);
+            cv.setUint16(4, 20, true);
+            cv.setUint16(6, 20, true);
+            cv.setUint16(8, 0, true);
+            cv.setUint16(10, 0, true);
+            cv.setUint16(12, 0, true);
+            cv.setUint16(14, 0, true);
+            cv.setUint32(16, crc, true);
+            cv.setUint32(20, data.length, true);
+            cv.setUint32(24, data.length, true);
+            cv.setUint16(28, name.length, true);
+            cv.setUint16(30, 0, true);
+            cv.setUint16(32, 0, true);
+            cv.setUint16(34, 0, true);
+            cv.setUint16(36, 0, true);
+            cv.setUint32(38, 0, true);
+            cv.setUint32(42, offset, true);
+            cd.set(name, 46);
+            centralDir.push(cd);
+
+            offset += local.length;
+        }
+
+        const cdStart = offset;
+        let cdSize = 0;
+        for (const cd of centralDir) cdSize += cd.length;
+
+        // End of central directory
+        const end = new Uint8Array(22);
+        const ev = new DataView(end.buffer);
+        ev.setUint32(0, 0x06054b50, true);
+        ev.setUint16(4, 0, true);
+        ev.setUint16(6, 0, true);
+        ev.setUint16(8, files.length, true);
+        ev.setUint16(10, files.length, true);
+        ev.setUint32(12, cdSize, true);
+        ev.setUint32(16, cdStart, true);
+        ev.setUint16(20, 0, true);
+
+        const total = new Uint8Array(offset + cdSize + 22);
+        let pos = 0;
+        for (const p of parts) { total.set(p, pos); pos += p.length; }
+        for (const cd of centralDir) { total.set(cd, pos); pos += cd.length; }
+        total.set(end, pos);
+
+        return total.buffer;
+    }
+
+    crc32(data) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < data.length; i++) {
+            crc ^= data[i];
+            for (let j = 0; j < 8; j++) {
+                crc = (crc >>> 1) ^ (crc & 1 ? 0xEDB88320 : 0);
+            }
+        }
+        return (crc ^ 0xFFFFFFFF) >>> 0;
     }
 }
 

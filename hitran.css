@@ -221,11 +221,24 @@ select:focus, input:focus {
     text-align: right;
 }
 
-.layer-color-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
+.layer-color-picker {
+    width: 28px;
+    height: 28px;
+    padding: 1px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    cursor: pointer;
     flex-shrink: 0;
+}
+
+.layer-color-picker::-webkit-color-swatch-wrapper {
+    padding: 1px;
+}
+
+.layer-color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 2px;
 }
 
 .layer-remove {
@@ -241,6 +254,29 @@ select:focus, input:focus {
 
 .layer-remove:hover {
     color: #f87171;
+}
+
+/* Export bar */
+.export-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.export-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.export-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
 }
 
 /* Chart */
