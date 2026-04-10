@@ -159,6 +159,37 @@ const HITRAN_DATA = {
             [1060.48, 3.05e-22, 0.0670, 169.8, 0.75, -0.0010],
             [1064.18, 2.15e-22, 0.0678, 224.0, 0.77, -0.0014],
         ]
+    },
+    NO: {
+        name: 'NO',
+        molec_id: 8,
+        default_range: [1850, 1950],
+        lines: [
+            [1853.26, 1.82e-23, 0.0520, 360.5, 0.68, -0.0040],
+            [1856.72, 2.95e-23, 0.0535, 312.8, 0.70, -0.0038],
+            [1860.21, 4.55e-23, 0.0528, 268.2, 0.69, -0.0041],
+            [1863.73, 6.88e-23, 0.0540, 226.8, 0.71, -0.0037],
+            [1867.28, 9.92e-23, 0.0525, 188.5, 0.68, -0.0042],
+            [1870.86, 1.38e-22, 0.0538, 153.4, 0.70, -0.0039],
+            [1874.47, 1.85e-22, 0.0530, 121.4, 0.69, -0.0040],
+            [1878.11, 2.42e-22, 0.0542, 92.5, 0.71, -0.0036],
+            [1881.78, 3.05e-22, 0.0522, 66.8, 0.68, -0.0043],
+            [1885.48, 3.72e-22, 0.0536, 44.2, 0.70, -0.0038],
+            [1889.21, 4.35e-22, 0.0532, 24.8, 0.69, -0.0041],
+            [1892.97, 4.88e-22, 0.0545, 8.5, 0.71, -0.0035],
+            [1896.76, 5.22e-22, 0.0527, 0.0, 0.68, -0.0042],
+            [1900.58, 5.15e-22, 0.0540, 2.4, 0.70, -0.0039],
+            [1904.43, 4.82e-22, 0.0534, 12.8, 0.69, -0.0040],
+            [1908.31, 4.28e-22, 0.0548, 30.2, 0.71, -0.0036],
+            [1912.22, 3.62e-22, 0.0524, 54.5, 0.68, -0.0043],
+            [1916.16, 2.88e-22, 0.0538, 85.8, 0.70, -0.0037],
+            [1920.13, 2.18e-22, 0.0530, 124.0, 0.69, -0.0041],
+            [1924.13, 1.55e-22, 0.0544, 169.2, 0.71, -0.0035],
+            [1928.16, 1.02e-22, 0.0526, 221.5, 0.68, -0.0042],
+            [1932.22, 6.25e-23, 0.0540, 280.8, 0.70, -0.0038],
+            [1936.31, 3.55e-23, 0.0532, 347.1, 0.69, -0.0040],
+            [1940.43, 1.82e-23, 0.0546, 420.5, 0.71, -0.0036],
+        ]
     }
 };
 
@@ -176,10 +207,36 @@ class HitranExplorer {
         this.plotTypeSelect = document.getElementById('plot-type');
         this.tempInput = document.getElementById('temperature');
         this.pressInput = document.getElementById('pressure');
+        this.unitSelect = document.getElementById('spectral-unit');
 
         this.setupEvents();
         this.resizeCanvas();
         this.plot();
+    }
+
+    isWavelength() {
+        return this.unitSelect.value === 'wavelength';
+    }
+
+    nuToDisplay(nu) {
+        return this.isWavelength() ? 10000 / nu : nu;
+    }
+
+    displayToNu(val) {
+        return this.isWavelength() ? 10000 / val : val;
+    }
+
+    spectralLabel() {
+        return this.isWavelength() ? 'Wavelength (μm)' : 'Wavenumber (cm⁻¹)';
+    }
+
+    updateLabels() {
+        const wl = this.isWavelength();
+        document.getElementById('numin-label').textContent = wl ? 'Min Wavelength (μm)' : 'Min Wavenumber (cm⁻¹)';
+        document.getElementById('numax-label').textContent = wl ? 'Max Wavelength (μm)' : 'Max Wavenumber (cm⁻¹)';
+        document.getElementById('th-spectral').textContent = wl ? 'λ (μm)' : 'ν (cm⁻¹)';
+        this.numinInput.step = wl ? 0.1 : 10;
+        this.numaxInput.step = wl ? 0.1 : 10;
     }
 
     setupEvents() {
@@ -187,8 +244,27 @@ class HitranExplorer {
 
         this.moleculeSelect.addEventListener('change', () => {
             const mol = HITRAN_DATA[this.moleculeSelect.value];
-            this.numinInput.value = mol.default_range[0];
-            this.numaxInput.value = mol.default_range[1];
+            if (this.isWavelength()) {
+                this.numinInput.value = (10000 / mol.default_range[1]).toFixed(2);
+                this.numaxInput.value = (10000 / mol.default_range[0]).toFixed(2);
+            } else {
+                this.numinInput.value = mol.default_range[0];
+                this.numaxInput.value = mol.default_range[1];
+            }
+            this.plot();
+        });
+
+        this.unitSelect.addEventListener('change', () => {
+            const minVal = parseFloat(this.numinInput.value);
+            const maxVal = parseFloat(this.numaxInput.value);
+            if (this.isWavelength()) {
+                this.numinInput.value = (10000 / maxVal).toFixed(2);
+                this.numaxInput.value = (10000 / minVal).toFixed(2);
+            } else {
+                this.numinInput.value = Math.round(10000 / maxVal);
+                this.numaxInput.value = Math.round(10000 / minVal);
+            }
+            this.updateLabels();
             this.plot();
         });
 
@@ -216,8 +292,16 @@ class HitranExplorer {
     plot() {
         const molKey = this.moleculeSelect.value;
         const mol = HITRAN_DATA[molKey];
-        const numin = parseFloat(this.numinInput.value);
-        const numax = parseFloat(this.numaxInput.value);
+        let numin, numax;
+        const inputMin = parseFloat(this.numinInput.value);
+        const inputMax = parseFloat(this.numaxInput.value);
+        if (this.isWavelength()) {
+            numin = 10000 / inputMax;
+            numax = 10000 / inputMin;
+        } else {
+            numin = inputMin;
+            numax = inputMax;
+        }
         const T = parseFloat(this.tempInput.value);
         const P = parseFloat(this.pressInput.value);
         const plotType = this.plotTypeSelect.value;
@@ -284,6 +368,11 @@ class HitranExplorer {
         this.drawAxes(ctx, m, pw, ph, numin, numax, plotType);
     }
 
+    nuToX(nu, m, pw, numin, numax) {
+        const frac = (nu - numin) / (numax - numin);
+        return this.isWavelength() ? m.left + (1 - frac) * pw : m.left + frac * pw;
+    }
+
     drawStick(ctx, m, pw, ph, numin, numax, intensities) {
         const maxS = Math.max(...intensities);
         const minS = Math.min(...intensities.filter(s => s > 0));
@@ -291,7 +380,7 @@ class HitranExplorer {
         const logMin = Math.log10(minS) - 0.5;
 
         for (const line of this.currentLines) {
-            const x = m.left + ((line.nu - numin) / (numax - numin)) * pw;
+            const x = this.nuToX(line.nu, m, pw, numin, numax);
             const logS = Math.log10(line.S_T);
             const yFrac = (logS - logMin) / (logMax - logMin);
             const y = m.top + ph - yFrac * ph;
@@ -340,13 +429,15 @@ class HitranExplorer {
         gradient.addColorStop(0, 'rgba(56, 189, 248, 0.4)');
         gradient.addColorStop(1, 'rgba(56, 189, 248, 0.02)');
 
+        // Draw filled area — iterate in pixel order for correct fill path
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.moveTo(m.left, m.top + ph);
 
-        for (let i = 0; i < nPoints; i++) {
-            const x = m.left + (i / nPoints) * pw;
-            const yFrac = sigma[i] / maxSigma;
+        for (let px = 0; px < nPoints; px++) {
+            const idx = this.isWavelength() ? nPoints - 1 - px : px;
+            const x = m.left + (px / nPoints) * pw;
+            const yFrac = sigma[idx] / maxSigma;
             const y = m.top + ph - yFrac * ph;
             ctx.lineTo(x, y);
         }
@@ -355,21 +446,24 @@ class HitranExplorer {
         ctx.closePath();
         ctx.fill();
 
-        // Draw line on top
+        // Draw line on top — iterate in pixel order for correct path
         ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        for (let i = 0; i < nPoints; i++) {
-            const x = m.left + (i / nPoints) * pw;
-            const yFrac = sigma[i] / maxSigma;
+        const wl = this.isWavelength();
+        for (let px = 0; px < nPoints; px++) {
+            const idx = wl ? nPoints - 1 - px : px;
+            const x = m.left + (px / nPoints) * pw;
+            const yFrac = sigma[idx] / maxSigma;
             const y = m.top + ph - yFrac * ph;
-            if (i === 0) ctx.moveTo(x, y);
+            if (px === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
         ctx.stroke();
     }
 
     drawAxes(ctx, m, pw, ph, numin, numax, plotType) {
+        const wl = this.isWavelength();
         ctx.strokeStyle = '#334155';
         ctx.lineWidth = 1;
 
@@ -391,13 +485,17 @@ class HitranExplorer {
         ctx.textAlign = 'center';
         const nTicks = 8;
         for (let i = 0; i <= nTicks; i++) {
-            const nu = numin + (i / nTicks) * (numax - numin);
             const x = m.left + (i / nTicks) * pw;
+            // In wavelength mode, left=low wavelength (high nu), right=high wavelength (low nu)
+            const nu = wl
+                ? numax - (i / nTicks) * (numax - numin)
+                : numin + (i / nTicks) * (numax - numin);
             ctx.beginPath();
             ctx.moveTo(x, m.top + ph);
             ctx.lineTo(x, m.top + ph + 5);
             ctx.stroke();
-            ctx.fillText(nu.toFixed(1), x, m.top + ph + 18);
+            const displayVal = wl ? (10000 / nu).toFixed(2) : nu.toFixed(1);
+            ctx.fillText(displayVal, x, m.top + ph + 18);
 
             // Grid
             if (i > 0 && i < nTicks) {
@@ -413,7 +511,7 @@ class HitranExplorer {
         // X label
         ctx.fillStyle = '#94a3b8';
         ctx.font = '12px sans-serif';
-        ctx.fillText('Wavenumber (cm⁻¹)', m.left + pw / 2, m.top + ph + 40);
+        ctx.fillText(wl ? 'Wavelength (μm)' : 'Wavenumber (cm⁻¹)', m.left + pw / 2, m.top + ph + 40);
 
         // Y label
         ctx.save();
@@ -435,7 +533,10 @@ class HitranExplorer {
         const pw = this.displayWidth - m.left - m.right;
         const { numin, numax } = this.plotState;
 
-        const nuHover = numin + ((mx - m.left) / pw) * (numax - numin);
+        const frac = (mx - m.left) / pw;
+        const nuHover = this.isWavelength()
+            ? numax - frac * (numax - numin)
+            : numin + frac * (numax - numin);
 
         // Find closest line
         let closest = null;
@@ -450,8 +551,12 @@ class HitranExplorer {
 
         const pixelDist = (minDist / (numax - numin)) * pw;
         if (closest && pixelDist < 20) {
+            const wl = this.isWavelength();
+            const spectralLine = wl
+                ? `<strong>λ</strong> = ${(10000 / closest.nu).toFixed(4)} μm`
+                : `<strong>ν</strong> = ${closest.nu.toFixed(3)} cm⁻¹`;
             this.tooltip.innerHTML =
-                `<strong>ν</strong> = ${closest.nu.toFixed(3)} cm⁻¹<br>` +
+                `${spectralLine}<br>` +
                 `<strong>S</strong> = ${closest.S_T.toExponential(3)} cm/mol<br>` +
                 `<strong>γ<sub>air</sub></strong> = ${closest.gamma_air.toFixed(4)} cm⁻¹/atm<br>` +
                 `<strong>E″</strong> = ${closest.E_lower.toFixed(1)} cm⁻¹`;
@@ -469,29 +574,39 @@ class HitranExplorer {
 
     updateStats(mol) {
         const count = this.currentLines.length;
+        const wl = this.isWavelength();
         document.querySelector('#stat-lines .stat-value').textContent = count;
 
         if (count > 0) {
             const strongest = this.currentLines.reduce((a, b) => a.S_T > b.S_T ? a : b);
+            const pos = wl ? `${(10000 / strongest.nu).toFixed(3)} μm` : `${strongest.nu.toFixed(2)} cm⁻¹`;
             document.querySelector('#stat-strongest .stat-value').textContent =
-                `${strongest.nu.toFixed(2)} cm⁻¹ (${strongest.S_T.toExponential(2)})`;
+                `${pos} (${strongest.S_T.toExponential(2)})`;
         } else {
             document.querySelector('#stat-strongest .stat-value').textContent = '—';
         }
 
-        document.querySelector('#stat-range .stat-value').textContent =
-            `${this.plotState.numin}–${this.plotState.numax} cm⁻¹`;
+        if (wl) {
+            const wlMin = (10000 / this.plotState.numax).toFixed(2);
+            const wlMax = (10000 / this.plotState.numin).toFixed(2);
+            document.querySelector('#stat-range .stat-value').textContent = `${wlMin}–${wlMax} μm`;
+        } else {
+            document.querySelector('#stat-range .stat-value').textContent =
+                `${this.plotState.numin}–${this.plotState.numax} cm⁻¹`;
+        }
     }
 
     updateTable() {
         const tbody = document.querySelector('#line-table tbody');
         tbody.innerHTML = '';
+        const wl = this.isWavelength();
 
         const sorted = [...this.currentLines].sort((a, b) => b.S_T - a.S_T);
         for (const line of sorted) {
             const tr = document.createElement('tr');
+            const spectralVal = wl ? (10000 / line.nu).toFixed(4) : line.nu.toFixed(3);
             tr.innerHTML =
-                `<td>${line.nu.toFixed(3)}</td>` +
+                `<td>${spectralVal}</td>` +
                 `<td>${line.S_T.toExponential(3)}</td>` +
                 `<td>${line.gamma_air.toFixed(4)}</td>` +
                 `<td>${line.E_lower.toFixed(1)}</td>`;
