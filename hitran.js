@@ -1,233 +1,30 @@
-// HITRAN Spectral Explorer
-// Sample line data: [nu (cm-1), S (cm/molecule) at 296K, gamma_air (cm-1/atm), E_lower (cm-1), n_air, delta_air]
-
-const HITRAN_DATA = {
-    CO2: {
-        name: 'CO₂',
-        molec_id: 2,
-        default_range: [2300, 2400],
-        lines: [
-            [2302.963, 2.01e-23, 0.0685, 396.0, 0.72, -0.0020],
-            [2305.256, 3.45e-23, 0.0710, 346.4, 0.73, -0.0018],
-            [2307.412, 5.12e-23, 0.0720, 300.1, 0.72, -0.0019],
-            [2309.432, 7.88e-23, 0.0715, 257.0, 0.71, -0.0021],
-            [2311.105, 1.15e-22, 0.0730, 217.1, 0.73, -0.0017],
-            [2313.773, 1.62e-22, 0.0725, 180.4, 0.72, -0.0019],
-            [2315.981, 2.10e-22, 0.0718, 146.8, 0.71, -0.0020],
-            [2317.555, 2.87e-22, 0.0735, 116.4, 0.74, -0.0016],
-            [2319.234, 3.55e-22, 0.0728, 89.2, 0.72, -0.0018],
-            [2321.662, 4.21e-22, 0.0740, 65.1, 0.73, -0.0015],
-            [2323.889, 4.98e-22, 0.0732, 44.2, 0.71, -0.0019],
-            [2326.102, 5.44e-22, 0.0745, 26.4, 0.74, -0.0014],
-            [2328.311, 5.88e-22, 0.0738, 11.8, 0.72, -0.0017],
-            [2330.515, 6.01e-22, 0.0742, 0.3, 0.73, -0.0016],
-            [2332.204, 5.79e-22, 0.0748, 3.5, 0.74, -0.0013],
-            [2334.412, 5.55e-22, 0.0735, 10.1, 0.72, -0.0018],
-            [2336.631, 5.12e-22, 0.0741, 19.9, 0.73, -0.0015],
-            [2338.845, 4.65e-22, 0.0729, 32.8, 0.71, -0.0019],
-            [2341.062, 4.01e-22, 0.0738, 48.9, 0.72, -0.0017],
-            [2343.283, 3.44e-22, 0.0745, 68.1, 0.74, -0.0014],
-            [2345.500, 2.85e-22, 0.0731, 90.5, 0.72, -0.0018],
-            [2347.720, 2.22e-22, 0.0742, 116.0, 0.73, -0.0016],
-            [2349.143, 1.92e-22, 0.0726, 137.0, 0.71, -0.0020],
-            [2349.916, 1.75e-22, 0.0738, 144.5, 0.73, -0.0015],
-            [2351.612, 1.82e-22, 0.0745, 137.0, 0.74, -0.0014],
-            [2353.524, 2.15e-22, 0.0731, 116.0, 0.72, -0.0018],
-            [2355.450, 2.68e-22, 0.0742, 90.5, 0.73, -0.0016],
-            [2357.380, 3.30e-22, 0.0728, 68.1, 0.71, -0.0019],
-            [2359.315, 3.95e-22, 0.0740, 48.9, 0.72, -0.0017],
-            [2361.250, 4.52e-22, 0.0735, 32.8, 0.73, -0.0015],
-            [2363.190, 5.01e-22, 0.0748, 19.9, 0.74, -0.0013],
-            [2365.132, 5.38e-22, 0.0731, 10.1, 0.72, -0.0018],
-            [2367.078, 5.61e-22, 0.0742, 3.5, 0.73, -0.0015],
-            [2369.025, 5.92e-22, 0.0736, 0.3, 0.71, -0.0019],
-            [2370.975, 5.75e-22, 0.0745, 11.8, 0.74, -0.0014],
-            [2372.928, 5.33e-22, 0.0728, 26.4, 0.72, -0.0017],
-            [2374.882, 4.85e-22, 0.0740, 44.2, 0.73, -0.0016],
-            [2376.840, 4.15e-22, 0.0733, 65.1, 0.71, -0.0019],
-            [2378.800, 3.42e-22, 0.0745, 89.2, 0.74, -0.0014],
-            [2380.762, 2.75e-22, 0.0729, 116.4, 0.72, -0.0018],
-            [2382.728, 2.01e-22, 0.0741, 146.8, 0.73, -0.0015],
-            [2384.695, 1.55e-22, 0.0736, 180.4, 0.71, -0.0019],
-            [2386.666, 1.08e-22, 0.0748, 217.1, 0.74, -0.0013],
-            [2388.639, 7.22e-23, 0.0730, 257.0, 0.72, -0.0018],
-            [2390.614, 4.85e-23, 0.0742, 300.1, 0.73, -0.0016],
-            [2392.592, 3.12e-23, 0.0727, 346.4, 0.71, -0.0020],
-            [2394.572, 1.88e-23, 0.0739, 396.0, 0.72, -0.0017],
-            [2396.555, 1.05e-23, 0.0745, 448.8, 0.74, -0.0014],
-        ]
-    },
-    H2O: {
-        name: 'H₂O',
-        molec_id: 1,
-        default_range: [1500, 1700],
-        lines: [
-            [1504.72, 5.21e-24, 0.0980, 744.1, 0.59, -0.0030],
-            [1509.45, 8.44e-24, 0.0940, 610.3, 0.62, -0.0025],
-            [1514.33, 1.35e-23, 0.0965, 503.8, 0.60, -0.0028],
-            [1519.88, 2.11e-23, 0.0930, 416.2, 0.63, -0.0022],
-            [1524.12, 3.67e-23, 0.0955, 340.5, 0.61, -0.0027],
-            [1530.55, 5.82e-23, 0.0975, 275.3, 0.58, -0.0031],
-            [1535.23, 8.15e-23, 0.0942, 222.1, 0.64, -0.0024],
-            [1540.87, 1.12e-22, 0.0968, 176.5, 0.60, -0.0028],
-            [1545.44, 1.55e-22, 0.0935, 138.4, 0.62, -0.0026],
-            [1550.92, 2.08e-22, 0.0988, 106.8, 0.57, -0.0033],
-            [1556.61, 2.65e-22, 0.0952, 81.4, 0.63, -0.0023],
-            [1561.38, 3.21e-22, 0.0972, 61.2, 0.59, -0.0029],
-            [1567.14, 3.88e-22, 0.0945, 45.3, 0.64, -0.0021],
-            [1572.95, 4.42e-22, 0.0985, 33.5, 0.58, -0.0032],
-            [1578.80, 4.91e-22, 0.0958, 25.1, 0.62, -0.0025],
-            [1584.70, 5.22e-22, 0.0976, 19.8, 0.60, -0.0028],
-            [1590.12, 5.48e-22, 0.0940, 16.5, 0.63, -0.0024],
-            [1594.88, 5.55e-22, 0.0992, 14.9, 0.57, -0.0034],
-            [1600.75, 5.61e-22, 0.0950, 14.2, 0.61, -0.0027],
-            [1606.23, 5.58e-22, 0.0978, 15.0, 0.59, -0.0030],
-            [1611.85, 5.42e-22, 0.0943, 17.1, 0.64, -0.0022],
-            [1617.50, 5.18e-22, 0.0986, 20.8, 0.58, -0.0031],
-            [1623.22, 4.82e-22, 0.0955, 26.3, 0.62, -0.0026],
-            [1629.00, 4.35e-22, 0.0971, 34.1, 0.60, -0.0028],
-            [1634.82, 3.78e-22, 0.0938, 44.5, 0.63, -0.0023],
-            [1640.68, 3.15e-22, 0.0988, 57.8, 0.57, -0.0033],
-            [1646.58, 2.52e-22, 0.0960, 74.2, 0.61, -0.0027],
-            [1652.51, 1.95e-22, 0.0945, 94.0, 0.64, -0.0021],
-            [1658.48, 1.42e-22, 0.0982, 117.5, 0.59, -0.0029],
-            [1664.50, 9.55e-23, 0.0952, 145.1, 0.62, -0.0025],
-            [1670.55, 6.12e-23, 0.0975, 177.0, 0.60, -0.0028],
-            [1676.63, 3.78e-23, 0.0940, 213.4, 0.63, -0.0024],
-            [1682.75, 2.15e-23, 0.0990, 254.8, 0.58, -0.0032],
-            [1688.90, 1.12e-23, 0.0958, 301.2, 0.61, -0.0027],
-            [1695.08, 5.55e-24, 0.0972, 352.8, 0.59, -0.0030],
-        ]
-    },
-    CH4: {
-        name: 'CH₄',
-        molec_id: 6,
-        default_range: [2900, 3100],
-        lines: [
-            [2903.12, 1.15e-23, 0.0580, 419.2, 0.75, -0.0085],
-            [2909.55, 2.34e-23, 0.0562, 355.8, 0.76, -0.0078],
-            [2915.78, 4.11e-23, 0.0575, 298.1, 0.74, -0.0082],
-            [2921.33, 6.85e-23, 0.0568, 245.5, 0.77, -0.0075],
-            [2927.90, 1.02e-22, 0.0582, 198.3, 0.75, -0.0080],
-            [2933.44, 1.55e-22, 0.0570, 156.4, 0.76, -0.0077],
-            [2939.12, 2.18e-22, 0.0585, 119.8, 0.74, -0.0083],
-            [2944.88, 2.92e-22, 0.0565, 88.2, 0.77, -0.0074],
-            [2950.65, 3.75e-22, 0.0578, 61.5, 0.75, -0.0081],
-            [2956.44, 4.48e-22, 0.0572, 39.6, 0.76, -0.0076],
-            [2962.25, 5.15e-22, 0.0588, 22.3, 0.74, -0.0084],
-            [2968.08, 5.62e-22, 0.0564, 10.5, 0.77, -0.0073],
-            [2973.92, 5.88e-22, 0.0580, 3.2, 0.75, -0.0080],
-            [2979.80, 5.75e-22, 0.0573, 0.8, 0.76, -0.0077],
-            [2985.70, 5.91e-22, 0.0586, 0.0, 0.74, -0.0082],
-            [2991.62, 5.68e-22, 0.0566, 3.8, 0.77, -0.0074],
-            [2997.55, 5.22e-22, 0.0579, 11.2, 0.75, -0.0081],
-            [3003.52, 4.65e-22, 0.0571, 23.5, 0.76, -0.0076],
-            [3009.50, 3.95e-22, 0.0585, 40.1, 0.74, -0.0083],
-            [3015.50, 3.18e-22, 0.0567, 61.8, 0.77, -0.0075],
-            [3021.52, 2.45e-22, 0.0581, 88.5, 0.75, -0.0080],
-            [3027.58, 1.78e-22, 0.0574, 120.4, 0.76, -0.0077],
-            [3033.65, 1.22e-22, 0.0587, 157.2, 0.74, -0.0084],
-            [3039.75, 7.85e-23, 0.0563, 199.1, 0.77, -0.0073],
-            [3045.88, 4.62e-23, 0.0577, 246.5, 0.75, -0.0080],
-            [3052.02, 2.55e-23, 0.0570, 299.2, 0.76, -0.0076],
-            [3058.20, 1.28e-23, 0.0583, 357.1, 0.74, -0.0082],
-            [3064.40, 5.85e-24, 0.0568, 420.5, 0.77, -0.0075],
-        ]
-    },
-    O3: {
-        name: 'O₃',
-        molec_id: 3,
-        default_range: [1000, 1070],
-        lines: [
-            [1000.82, 3.55e-23, 0.0665, 488.2, 0.76, -0.0012],
-            [1004.15, 5.88e-23, 0.0672, 412.5, 0.75, -0.0010],
-            [1007.50, 9.12e-23, 0.0658, 342.1, 0.77, -0.0014],
-            [1010.88, 1.35e-22, 0.0680, 278.4, 0.74, -0.0009],
-            [1014.28, 1.92e-22, 0.0668, 221.0, 0.76, -0.0013],
-            [1017.70, 2.65e-22, 0.0675, 170.2, 0.75, -0.0011],
-            [1021.15, 3.48e-22, 0.0660, 125.8, 0.77, -0.0015],
-            [1024.62, 4.32e-22, 0.0682, 87.5, 0.74, -0.0008],
-            [1028.11, 5.15e-22, 0.0670, 55.1, 0.76, -0.0012],
-            [1031.62, 5.88e-22, 0.0678, 28.8, 0.75, -0.0010],
-            [1035.15, 6.42e-22, 0.0662, 8.4, 0.77, -0.0014],
-            [1038.70, 6.78e-22, 0.0684, 0.0, 0.74, -0.0009],
-            [1042.28, 6.55e-22, 0.0672, 5.2, 0.76, -0.0013],
-            [1045.88, 6.12e-22, 0.0668, 22.5, 0.75, -0.0011],
-            [1049.50, 5.55e-22, 0.0676, 48.3, 0.77, -0.0015],
-            [1053.14, 4.82e-22, 0.0664, 82.0, 0.74, -0.0008],
-            [1056.80, 3.98e-22, 0.0680, 122.5, 0.76, -0.0012],
-            [1060.48, 3.05e-22, 0.0670, 169.8, 0.75, -0.0010],
-            [1064.18, 2.15e-22, 0.0678, 224.0, 0.77, -0.0014],
-        ]
-    },
-    NO: {
-        name: 'NO',
-        molec_id: 8,
-        default_range: [1850, 1950],
-        lines: [
-            [1853.26, 1.82e-23, 0.0520, 360.5, 0.68, -0.0040],
-            [1856.72, 2.95e-23, 0.0535, 312.8, 0.70, -0.0038],
-            [1860.21, 4.55e-23, 0.0528, 268.2, 0.69, -0.0041],
-            [1863.73, 6.88e-23, 0.0540, 226.8, 0.71, -0.0037],
-            [1867.28, 9.92e-23, 0.0525, 188.5, 0.68, -0.0042],
-            [1870.86, 1.38e-22, 0.0538, 153.4, 0.70, -0.0039],
-            [1874.47, 1.85e-22, 0.0530, 121.4, 0.69, -0.0040],
-            [1878.11, 2.42e-22, 0.0542, 92.5, 0.71, -0.0036],
-            [1881.78, 3.05e-22, 0.0522, 66.8, 0.68, -0.0043],
-            [1885.48, 3.72e-22, 0.0536, 44.2, 0.70, -0.0038],
-            [1889.21, 4.35e-22, 0.0532, 24.8, 0.69, -0.0041],
-            [1892.97, 4.88e-22, 0.0545, 8.5, 0.71, -0.0035],
-            [1896.76, 5.22e-22, 0.0527, 0.0, 0.68, -0.0042],
-            [1900.58, 5.15e-22, 0.0540, 2.4, 0.70, -0.0039],
-            [1904.43, 4.82e-22, 0.0534, 12.8, 0.69, -0.0040],
-            [1908.31, 4.28e-22, 0.0548, 30.2, 0.71, -0.0036],
-            [1912.22, 3.62e-22, 0.0524, 54.5, 0.68, -0.0043],
-            [1916.16, 2.88e-22, 0.0538, 85.8, 0.70, -0.0037],
-            [1920.13, 2.18e-22, 0.0530, 124.0, 0.69, -0.0041],
-            [1924.13, 1.55e-22, 0.0544, 169.2, 0.71, -0.0035],
-            [1928.16, 1.02e-22, 0.0526, 221.5, 0.68, -0.0042],
-            [1932.22, 6.25e-23, 0.0540, 280.8, 0.70, -0.0038],
-            [1936.31, 3.55e-23, 0.0532, 347.1, 0.69, -0.0040],
-            [1940.43, 1.82e-23, 0.0546, 420.5, 0.71, -0.0036],
-        ]
-    }
-};
+// HITRAN Spectral Explorer — Multi-layer engine
 
 class HitranExplorer {
     constructor() {
         this.canvas = document.getElementById('spectrum-canvas');
         this.ctx = this.canvas.getContext('2d');
         this.tooltip = document.getElementById('tooltip');
-        this.currentLines = [];
+        this.layers = [];
+        this.layerIdCounter = 0;
         this.plotState = null;
 
-        this.moleculeSelect = document.getElementById('molecule-select');
         this.numinInput = document.getElementById('numin');
         this.numaxInput = document.getElementById('numax');
         this.plotTypeSelect = document.getElementById('plot-type');
-        this.tempInput = document.getElementById('temperature');
-        this.pressInput = document.getElementById('pressure');
         this.unitSelect = document.getElementById('spectral-unit');
+        this.dbSelect = document.getElementById('database-select');
 
         this.setupEvents();
         this.resizeCanvas();
+        this.addLayer({ molecule: 'CO2', T: 296, P: 1.0 });
         this.plot();
     }
 
+    // --- Spectral unit helpers ---
+
     isWavelength() {
         return this.unitSelect.value === 'wavelength';
-    }
-
-    nuToDisplay(nu) {
-        return this.isWavelength() ? 10000 / nu : nu;
-    }
-
-    displayToNu(val) {
-        return this.isWavelength() ? 10000 / val : val;
-    }
-
-    spectralLabel() {
-        return this.isWavelength() ? 'Wavelength (μm)' : 'Wavenumber (cm⁻¹)';
     }
 
     updateLabels() {
@@ -239,19 +36,175 @@ class HitranExplorer {
         this.numaxInput.step = wl ? 0.1 : 10;
     }
 
+    getNuRange() {
+        const inputMin = parseFloat(this.numinInput.value);
+        const inputMax = parseFloat(this.numaxInput.value);
+        if (this.isWavelength()) {
+            return [10000 / inputMax, 10000 / inputMin];
+        }
+        return [inputMin, inputMax];
+    }
+
+    nuToX(nu, m, pw, numin, numax) {
+        const frac = (nu - numin) / (numax - numin);
+        return this.isWavelength() ? m.left + (1 - frac) * pw : m.left + frac * pw;
+    }
+
+    formatSpectral(nu) {
+        return this.isWavelength() ? (10000 / nu).toFixed(4) : nu.toFixed(3);
+    }
+
+    formatSpectralShort(nu) {
+        return this.isWavelength() ? (10000 / nu).toFixed(2) : nu.toFixed(1);
+    }
+
+    spectralUnit() {
+        return this.isWavelength() ? 'μm' : 'cm⁻¹';
+    }
+
+    // --- Layer management ---
+
+    addLayer(opts = {}) {
+        const id = this.layerIdCounter++;
+        const colorIdx = this.layers.length % LAYER_COLORS.length;
+        const layer = {
+            id,
+            molecule: opts.molecule || 'CO2',
+            T: opts.T || 296,
+            P: opts.P || 1.0,
+            enabled: true,
+            colorIdx,
+            db: opts.db || 'hitran',
+            lines: [],
+        };
+        this.layers.push(layer);
+        this.renderLayers();
+        return layer;
+    }
+
+    removeLayer(id) {
+        this.layers = this.layers.filter(l => l.id !== id);
+        this.renderLayers();
+        this.plot();
+    }
+
+    renderLayers() {
+        const container = document.getElementById('layers-container');
+        container.innerHTML = '';
+
+        for (const layer of this.layers) {
+            const color = LAYER_COLORS[layer.colorIdx];
+            const molecules = Object.keys(HITRAN_DATA);
+            const div = document.createElement('div');
+            div.className = 'layer-row';
+            div.style.borderLeftColor = color.line;
+            div.innerHTML = `
+                <label class="layer-toggle">
+                    <input type="checkbox" ${layer.enabled ? 'checked' : ''} data-layer-id="${layer.id}" data-field="enabled">
+                </label>
+                <select data-layer-id="${layer.id}" data-field="molecule">
+                    ${molecules.map(m => `<option value="${m}" ${layer.molecule === m ? 'selected' : ''}>${HITRAN_DATA[m].name}</option>`).join('')}
+                </select>
+                <select data-layer-id="${layer.id}" data-field="db" class="db-select">
+                    <option value="hitran" ${layer.db === 'hitran' ? 'selected' : ''}>HITRAN</option>
+                    <option value="hitemp" ${layer.db === 'hitemp' ? 'selected' : ''}>HITEMP</option>
+                </select>
+                <label class="layer-param">T<input type="number" value="${layer.T}" min="150" max="5000" step="50" data-layer-id="${layer.id}" data-field="T">K</label>
+                <label class="layer-param">P<input type="number" value="${layer.P}" min="0.001" max="100" step="0.1" data-layer-id="${layer.id}" data-field="P">atm</label>
+                <span class="layer-color-dot" style="background:${color.line}"></span>
+                <button class="layer-remove" data-layer-id="${layer.id}">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        // Wire events
+        container.querySelectorAll('[data-field]').forEach(el => {
+            const event = el.type === 'checkbox' ? 'change' : 'change';
+            el.addEventListener(event, (e) => {
+                const id = parseInt(e.target.dataset.layerId);
+                const field = e.target.dataset.field;
+                const layer = this.layers.find(l => l.id === id);
+                if (!layer) return;
+                if (field === 'enabled') {
+                    layer.enabled = e.target.checked;
+                } else if (field === 'T' || field === 'P') {
+                    layer[field] = parseFloat(e.target.value);
+                } else {
+                    layer[field] = e.target.value;
+                }
+                this.plot();
+            });
+        });
+
+        container.querySelectorAll('.layer-remove').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                this.removeLayer(parseInt(e.target.dataset.layerId));
+            });
+        });
+    }
+
+    // --- Presets ---
+
+    applyPreset(name) {
+        this.layers = [];
+        this.layerIdCounter = 0;
+
+        switch (name) {
+            case 'combustion':
+                this.addLayer({ molecule: 'NO', T: 1500, P: 1.0, db: 'hitemp' });
+                this.addLayer({ molecule: 'CO2', T: 1500, P: 1.0 });
+                this.addLayer({ molecule: 'H2O', T: 1500, P: 1.0 });
+                this.numinInput.value = 1800;
+                this.numaxInput.value = 2400;
+                if (this.isWavelength()) {
+                    this.numinInput.value = (10000 / 2400).toFixed(2);
+                    this.numaxInput.value = (10000 / 1800).toFixed(2);
+                }
+                break;
+
+            case 'ambient':
+                this.addLayer({ molecule: 'CO2', T: 296, P: 1.0 });
+                this.addLayer({ molecule: 'H2O', T: 296, P: 1.0 });
+                this.numinInput.value = 1500;
+                this.numaxInput.value = 2400;
+                if (this.isWavelength()) {
+                    this.numinInput.value = (10000 / 2400).toFixed(2);
+                    this.numaxInput.value = (10000 / 1500).toFixed(2);
+                }
+                break;
+
+            case 'no-comparison':
+                this.addLayer({ molecule: 'NO', T: 296, P: 1.0 });
+                this.addLayer({ molecule: 'NO', T: 1500, P: 1.0, db: 'hitemp' });
+                this.numinInput.value = 1750;
+                this.numaxInput.value = 1960;
+                if (this.isWavelength()) {
+                    this.numinInput.value = (10000 / 1960).toFixed(2);
+                    this.numaxInput.value = (10000 / 1750).toFixed(2);
+                }
+                break;
+
+            case 'clear':
+                break;
+        }
+
+        this.renderLayers();
+        this.plot();
+    }
+
+    // --- Events ---
+
     setupEvents() {
         document.getElementById('plot-btn').addEventListener('click', () => this.plot());
-
-        this.moleculeSelect.addEventListener('change', () => {
-            const mol = HITRAN_DATA[this.moleculeSelect.value];
-            if (this.isWavelength()) {
-                this.numinInput.value = (10000 / mol.default_range[1]).toFixed(2);
-                this.numaxInput.value = (10000 / mol.default_range[0]).toFixed(2);
-            } else {
-                this.numinInput.value = mol.default_range[0];
-                this.numaxInput.value = mol.default_range[1];
-            }
+        document.getElementById('add-layer-btn').addEventListener('click', () => {
+            this.addLayer();
             this.plot();
+        });
+
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.applyPreset(btn.dataset.preset);
+            });
         });
 
         this.unitSelect.addEventListener('change', () => {
@@ -289,173 +242,183 @@ class HitranExplorer {
         this.displayHeight = rect.height;
     }
 
-    plot() {
-        const molKey = this.moleculeSelect.value;
-        const mol = HITRAN_DATA[molKey];
-        let numin, numax;
-        const inputMin = parseFloat(this.numinInput.value);
-        const inputMax = parseFloat(this.numaxInput.value);
-        if (this.isWavelength()) {
-            numin = 10000 / inputMax;
-            numax = 10000 / inputMin;
-        } else {
-            numin = inputMin;
-            numax = inputMax;
-        }
-        const T = parseFloat(this.tempInput.value);
-        const P = parseFloat(this.pressInput.value);
-        const plotType = this.plotTypeSelect.value;
+    // --- Compute ---
 
-        // Filter lines in range
-        this.currentLines = mol.lines
+    computeLayerLines(layer, numin, numax) {
+        const db = layer.db === 'hitemp' && HITEMP_DATA[layer.molecule]
+            ? HITEMP_DATA
+            : HITRAN_DATA;
+        const mol = db[layer.molecule];
+        if (!mol) return [];
+
+        const filtered = mol.lines
             .filter(l => l[0] >= numin && l[0] <= numax)
             .map(l => ({
-                nu: l[0],
-                S: l[1],
-                gamma_air: l[2],
-                E_lower: l[3],
-                n_air: l[4],
-                delta_air: l[5]
+                nu: l[0], S: l[1], gamma_air: l[2],
+                E_lower: l[3], n_air: l[4], delta_air: l[5],
             }));
 
-        // Adjust intensity for temperature
         const T_ref = 296.0;
-        const c2 = 1.4387769; // second radiation constant (cm·K)
-        for (const line of this.currentLines) {
-            const ratio = T_ref / T;
+        const c2 = 1.4387769;
+        const T = layer.T;
+        for (const line of filtered) {
             const boltzmann = Math.exp(-c2 * line.E_lower / T) / Math.exp(-c2 * line.E_lower / T_ref);
             const stimulated = (1 - Math.exp(-c2 * line.nu / T)) / (1 - Math.exp(-c2 * line.nu / T_ref));
+            const ratio = T_ref / T;
             line.S_T = line.S * boltzmann * stimulated * ratio;
+            line.gamma_T = line.gamma_air * layer.P * Math.pow(T_ref / T, line.n_air);
+        }
+        return filtered;
+    }
+
+    // --- Plot ---
+
+    plot() {
+        const [numin, numax] = this.getNuRange();
+        const plotType = this.plotTypeSelect.value;
+
+        for (const layer of this.layers) {
+            if (layer.enabled) {
+                layer.lines = this.computeLayerLines(layer, numin, numax);
+            } else {
+                layer.lines = [];
+            }
         }
 
-        this.plotState = { mol, numin, numax, T, P, plotType };
+        this.plotState = { numin, numax, plotType };
         this.draw();
-        this.updateStats(mol);
+        this.updateStats();
         this.updateTable();
+        this.updateLegend();
     }
 
     draw() {
-        const { numin, numax, plotType, P } = this.plotState;
+        const { numin, numax, plotType } = this.plotState;
         const ctx = this.ctx;
         const w = this.displayWidth;
         const h = this.displayHeight;
-
-        // Margins
         const m = { top: 20, right: 30, bottom: 50, left: 70 };
         const pw = w - m.left - m.right;
         const ph = h - m.top - m.bottom;
 
-        // Clear
         ctx.fillStyle = '#111827';
         ctx.fillRect(0, 0, w, h);
 
-        if (this.currentLines.length === 0) {
+        const activeLayers = this.layers.filter(l => l.enabled && l.lines.length > 0);
+
+        if (activeLayers.length === 0) {
             ctx.fillStyle = '#94a3b8';
             ctx.font = '14px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('No lines in this range', w / 2, h / 2);
+            this.drawAxes(ctx, m, pw, ph, numin, numax, plotType);
             return;
         }
 
-        const intensities = this.currentLines.map(l => l.S_T);
-
         if (plotType === 'stick') {
-            this.drawStick(ctx, m, pw, ph, numin, numax, intensities);
+            // Compute global log scale across all layers
+            let allS = [];
+            for (const layer of activeLayers) {
+                allS.push(...layer.lines.map(l => l.S_T).filter(s => s > 0));
+            }
+            const logMax = Math.log10(Math.max(...allS));
+            const logMin = Math.log10(Math.min(...allS)) - 0.5;
+
+            for (const layer of activeLayers) {
+                this.drawStick(ctx, m, pw, ph, numin, numax, layer, logMin, logMax);
+            }
         } else {
-            this.drawCrossSection(ctx, m, pw, ph, numin, numax, P);
+            // Cross section: compute all, find global max, then draw
+            const nPoints = Math.min(pw * 2, 2000);
+            const dnu = (numax - numin) / nPoints;
+            const sigmas = [];
+            let globalMax = 0;
+
+            for (const layer of activeLayers) {
+                const sigma = new Float64Array(nPoints);
+                for (const line of layer.lines) {
+                    const gamma = line.gamma_T;
+                    for (let i = 0; i < nPoints; i++) {
+                        const nu = numin + i * dnu;
+                        const diff = nu - line.nu;
+                        sigma[i] += (line.S_T / Math.PI) * (gamma / (diff * diff + gamma * gamma));
+                    }
+                }
+                let layerMax = 0;
+                for (let i = 0; i < nPoints; i++) {
+                    if (sigma[i] > layerMax) layerMax = sigma[i];
+                }
+                if (layerMax > globalMax) globalMax = layerMax;
+                sigmas.push(sigma);
+            }
+
+            if (globalMax > 0) {
+                for (let li = 0; li < activeLayers.length; li++) {
+                    this.drawCrossSection(ctx, m, pw, ph, nPoints, sigmas[li], globalMax, activeLayers[li]);
+                }
+            }
         }
 
         this.drawAxes(ctx, m, pw, ph, numin, numax, plotType);
     }
 
-    nuToX(nu, m, pw, numin, numax) {
-        const frac = (nu - numin) / (numax - numin);
-        return this.isWavelength() ? m.left + (1 - frac) * pw : m.left + frac * pw;
-    }
+    drawStick(ctx, m, pw, ph, numin, numax, layer, logMin, logMax) {
+        const color = LAYER_COLORS[layer.colorIdx];
 
-    drawStick(ctx, m, pw, ph, numin, numax, intensities) {
-        const maxS = Math.max(...intensities);
-        const minS = Math.min(...intensities.filter(s => s > 0));
-        const logMax = Math.log10(maxS);
-        const logMin = Math.log10(minS) - 0.5;
-
-        for (const line of this.currentLines) {
+        for (const line of layer.lines) {
+            if (line.S_T <= 0) continue;
             const x = this.nuToX(line.nu, m, pw, numin, numax);
             const logS = Math.log10(line.S_T);
-            const yFrac = (logS - logMin) / (logMax - logMin);
+            const yFrac = Math.max(0, (logS - logMin) / (logMax - logMin));
             const y = m.top + ph - yFrac * ph;
 
-            const hue = 200 + (1 - yFrac) * 40;
-            ctx.strokeStyle = `hsl(${hue}, 85%, ${55 + yFrac * 20}%)`;
+            ctx.strokeStyle = color.line;
+            ctx.globalAlpha = 0.5 + yFrac * 0.5;
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(x, m.top + ph);
             ctx.lineTo(x, y);
             ctx.stroke();
 
-            // Small dot at top
-            ctx.fillStyle = '#38bdf8';
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = color.line;
             ctx.beginPath();
             ctx.arc(x, y, 2, 0, Math.PI * 2);
             ctx.fill();
         }
+        ctx.globalAlpha = 1;
     }
 
-    drawCrossSection(ctx, m, pw, ph, numin, numax, P) {
-        // Compute Lorentzian cross section on a grid
-        const nPoints = Math.min(pw * 2, 2000);
-        const dnu = (numax - numin) / nPoints;
-        const sigma = new Float64Array(nPoints);
+    drawCrossSection(ctx, m, pw, ph, nPoints, sigma, globalMax, layer) {
+        const color = LAYER_COLORS[layer.colorIdx];
+        const wl = this.isWavelength();
 
-        for (const line of this.currentLines) {
-            const gamma = line.gamma_air * P;
-            for (let i = 0; i < nPoints; i++) {
-                const nu = numin + i * dnu;
-                const diff = nu - line.nu;
-                sigma[i] += (line.S_T / Math.PI) * (gamma / (diff * diff + gamma * gamma));
-            }
-        }
-
-        // Find max for scaling
-        let maxSigma = 0;
-        for (let i = 0; i < nPoints; i++) {
-            if (sigma[i] > maxSigma) maxSigma = sigma[i];
-        }
-
-        if (maxSigma === 0) return;
-
-        // Draw filled area
+        // Filled area
         const gradient = ctx.createLinearGradient(0, m.top, 0, m.top + ph);
-        gradient.addColorStop(0, 'rgba(56, 189, 248, 0.4)');
-        gradient.addColorStop(1, 'rgba(56, 189, 248, 0.02)');
+        gradient.addColorStop(0, color.fill);
+        gradient.addColorStop(1, color.fill.replace(/[\d.]+\)$/, '0.02)'));
 
-        // Draw filled area — iterate in pixel order for correct fill path
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.moveTo(m.left, m.top + ph);
-
         for (let px = 0; px < nPoints; px++) {
-            const idx = this.isWavelength() ? nPoints - 1 - px : px;
+            const idx = wl ? nPoints - 1 - px : px;
             const x = m.left + (px / nPoints) * pw;
-            const yFrac = sigma[idx] / maxSigma;
-            const y = m.top + ph - yFrac * ph;
+            const y = m.top + ph - (sigma[idx] / globalMax) * ph;
             ctx.lineTo(x, y);
         }
-
         ctx.lineTo(m.left + pw, m.top + ph);
         ctx.closePath();
         ctx.fill();
 
-        // Draw line on top — iterate in pixel order for correct path
-        ctx.strokeStyle = '#38bdf8';
+        // Line
+        ctx.strokeStyle = color.line;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        const wl = this.isWavelength();
         for (let px = 0; px < nPoints; px++) {
             const idx = wl ? nPoints - 1 - px : px;
             const x = m.left + (px / nPoints) * pw;
-            const yFrac = sigma[idx] / maxSigma;
-            const y = m.top + ph - yFrac * ph;
+            const y = m.top + ph - (sigma[idx] / globalMax) * ph;
             if (px === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
@@ -467,26 +430,22 @@ class HitranExplorer {
         ctx.strokeStyle = '#334155';
         ctx.lineWidth = 1;
 
-        // X axis
         ctx.beginPath();
         ctx.moveTo(m.left, m.top + ph);
         ctx.lineTo(m.left + pw, m.top + ph);
         ctx.stroke();
 
-        // Y axis
         ctx.beginPath();
         ctx.moveTo(m.left, m.top);
         ctx.lineTo(m.left, m.top + ph);
         ctx.stroke();
 
-        // X ticks
         ctx.fillStyle = '#94a3b8';
         ctx.font = '11px sans-serif';
         ctx.textAlign = 'center';
         const nTicks = 8;
         for (let i = 0; i <= nTicks; i++) {
             const x = m.left + (i / nTicks) * pw;
-            // In wavelength mode, left=low wavelength (high nu), right=high wavelength (low nu)
             const nu = wl
                 ? numax - (i / nTicks) * (numax - numin)
                 : numin + (i / nTicks) * (numax - numin);
@@ -494,10 +453,8 @@ class HitranExplorer {
             ctx.moveTo(x, m.top + ph);
             ctx.lineTo(x, m.top + ph + 5);
             ctx.stroke();
-            const displayVal = wl ? (10000 / nu).toFixed(2) : nu.toFixed(1);
-            ctx.fillText(displayVal, x, m.top + ph + 18);
+            ctx.fillText(wl ? (10000 / nu).toFixed(2) : nu.toFixed(1), x, m.top + ph + 18);
 
-            // Grid
             if (i > 0 && i < nTicks) {
                 ctx.strokeStyle = '#1e293b';
                 ctx.beginPath();
@@ -508,12 +465,10 @@ class HitranExplorer {
             }
         }
 
-        // X label
         ctx.fillStyle = '#94a3b8';
         ctx.font = '12px sans-serif';
         ctx.fillText(wl ? 'Wavelength (μm)' : 'Wavenumber (cm⁻¹)', m.left + pw / 2, m.top + ph + 40);
 
-        // Y label
         ctx.save();
         ctx.translate(15, m.top + ph / 2);
         ctx.rotate(-Math.PI / 2);
@@ -522,13 +477,13 @@ class HitranExplorer {
         ctx.restore();
     }
 
+    // --- Hover ---
+
     handleHover(e) {
-        if (!this.plotState || this.currentLines.length === 0) return;
+        if (!this.plotState) return;
 
         const rect = this.canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
-        const my = e.clientY - rect.top;
-
         const m = { top: 20, right: 30, bottom: 50, left: 70 };
         const pw = this.displayWidth - m.left - m.right;
         const { numin, numax } = this.plotState;
@@ -538,32 +493,41 @@ class HitranExplorer {
             ? numax - frac * (numax - numin)
             : numin + frac * (numax - numin);
 
-        // Find closest line
+        // Find closest line across all active layers
         let closest = null;
+        let closestLayer = null;
         let minDist = Infinity;
-        for (const line of this.currentLines) {
-            const dist = Math.abs(line.nu - nuHover);
-            if (dist < minDist) {
-                minDist = dist;
-                closest = line;
+        for (const layer of this.layers) {
+            if (!layer.enabled) continue;
+            for (const line of layer.lines) {
+                const dist = Math.abs(line.nu - nuHover);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = line;
+                    closestLayer = layer;
+                }
             }
         }
 
         const pixelDist = (minDist / (numax - numin)) * pw;
-        if (closest && pixelDist < 20) {
+        if (closest && closestLayer && pixelDist < 20) {
             const wl = this.isWavelength();
+            const color = LAYER_COLORS[closestLayer.colorIdx];
+            const db = closestLayer.db === 'hitemp' ? HITEMP_DATA : HITRAN_DATA;
+            const molName = db[closestLayer.molecule]?.name || closestLayer.molecule;
             const spectralLine = wl
                 ? `<strong>λ</strong> = ${(10000 / closest.nu).toFixed(4)} μm`
                 : `<strong>ν</strong> = ${closest.nu.toFixed(3)} cm⁻¹`;
             this.tooltip.innerHTML =
+                `<span style="color:${color.line};font-weight:bold">${molName}</span> (${closestLayer.T} K)<br>` +
                 `${spectralLine}<br>` +
-                `<strong>S</strong> = ${closest.S_T.toExponential(3)} cm/mol<br>` +
-                `<strong>γ<sub>air</sub></strong> = ${closest.gamma_air.toFixed(4)} cm⁻¹/atm<br>` +
+                `<strong>S(T)</strong> = ${closest.S_T.toExponential(3)} cm/mol<br>` +
+                `<strong>γ(T,P)</strong> = ${closest.gamma_T.toFixed(4)} cm⁻¹<br>` +
                 `<strong>E″</strong> = ${closest.E_lower.toFixed(1)} cm⁻¹`;
 
             let tx = e.clientX - rect.left + 12;
             let ty = e.clientY - rect.top - 10;
-            if (tx + 180 > this.displayWidth) tx = tx - 200;
+            if (tx + 200 > this.displayWidth) tx -= 220;
             this.tooltip.style.left = tx + 'px';
             this.tooltip.style.top = ty + 'px';
             this.tooltip.style.display = 'block';
@@ -572,43 +536,73 @@ class HitranExplorer {
         }
     }
 
-    updateStats(mol) {
-        const count = this.currentLines.length;
-        const wl = this.isWavelength();
-        document.querySelector('#stat-lines .stat-value').textContent = count;
+    // --- Legend ---
 
-        if (count > 0) {
-            const strongest = this.currentLines.reduce((a, b) => a.S_T > b.S_T ? a : b);
-            const pos = wl ? `${(10000 / strongest.nu).toFixed(3)} μm` : `${strongest.nu.toFixed(2)} cm⁻¹`;
-            document.querySelector('#stat-strongest .stat-value').textContent =
-                `${pos} (${strongest.S_T.toExponential(2)})`;
-        } else {
-            document.querySelector('#stat-strongest .stat-value').textContent = '—';
+    updateLegend() {
+        const legend = document.getElementById('legend');
+        const active = this.layers.filter(l => l.enabled);
+        if (active.length <= 1) {
+            legend.style.display = 'none';
+            return;
         }
+        legend.style.display = 'flex';
+        legend.innerHTML = active.map(layer => {
+            const color = LAYER_COLORS[layer.colorIdx];
+            const db = layer.db === 'hitemp' ? HITEMP_DATA : HITRAN_DATA;
+            const molName = db[layer.molecule]?.name || layer.molecule;
+            const dbLabel = layer.db === 'hitemp' ? ' [HT]' : '';
+            return `<span class="legend-item">
+                <span class="legend-dot" style="background:${color.line}"></span>
+                ${molName}${dbLabel} ${layer.T} K
+            </span>`;
+        }).join('');
+    }
 
-        if (wl) {
-            const wlMin = (10000 / this.plotState.numax).toFixed(2);
-            const wlMax = (10000 / this.plotState.numin).toFixed(2);
-            document.querySelector('#stat-range .stat-value').textContent = `${wlMin}–${wlMax} μm`;
-        } else {
-            document.querySelector('#stat-range .stat-value').textContent =
-                `${this.plotState.numin}–${this.plotState.numax} cm⁻¹`;
+    // --- Stats & Table ---
+
+    updateStats() {
+        const active = this.layers.filter(l => l.enabled);
+        const totalLines = active.reduce((sum, l) => sum + l.lines.length, 0);
+
+        document.querySelector('#stat-layers .stat-value').textContent = active.length;
+        document.querySelector('#stat-lines .stat-value').textContent = totalLines;
+
+        if (this.plotState) {
+            const { numin, numax } = this.plotState;
+            if (this.isWavelength()) {
+                document.querySelector('#stat-range .stat-value').textContent =
+                    `${(10000 / numax).toFixed(2)}–${(10000 / numin).toFixed(2)} μm`;
+            } else {
+                document.querySelector('#stat-range .stat-value').textContent =
+                    `${numin}–${numax} cm⁻¹`;
+            }
         }
     }
 
     updateTable() {
         const tbody = document.querySelector('#line-table tbody');
         tbody.innerHTML = '';
-        const wl = this.isWavelength();
 
-        const sorted = [...this.currentLines].sort((a, b) => b.S_T - a.S_T);
-        for (const line of sorted) {
+        const allLines = [];
+        for (const layer of this.layers) {
+            if (!layer.enabled) continue;
+            const color = LAYER_COLORS[layer.colorIdx];
+            const db = layer.db === 'hitemp' ? HITEMP_DATA : HITRAN_DATA;
+            const molName = db[layer.molecule]?.name || layer.molecule;
+            for (const line of layer.lines) {
+                allLines.push({ ...line, layerName: molName, layerT: layer.T, color: color.line });
+            }
+        }
+
+        allLines.sort((a, b) => b.S_T - a.S_T);
+
+        for (const line of allLines.slice(0, 100)) {
             const tr = document.createElement('tr');
-            const spectralVal = wl ? (10000 / line.nu).toFixed(4) : line.nu.toFixed(3);
             tr.innerHTML =
-                `<td>${spectralVal}</td>` +
+                `<td><span style="color:${line.color}">●</span> ${line.layerName} ${line.layerT}K</td>` +
+                `<td>${this.formatSpectral(line.nu)}</td>` +
                 `<td>${line.S_T.toExponential(3)}</td>` +
-                `<td>${line.gamma_air.toFixed(4)}</td>` +
+                `<td>${line.gamma_T.toFixed(4)}</td>` +
                 `<td>${line.E_lower.toFixed(1)}</td>`;
             tbody.appendChild(tr);
         }
